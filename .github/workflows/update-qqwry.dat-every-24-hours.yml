@@ -1,0 +1,54 @@
+name: Update QQwry.dat Every 24 Hours
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+  schedule: 
+    - cron:  '0 0 */1 * *' 
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: get qqwry.dat
+        run: |
+          mkdir temp && cd temp
+          wget https://constexpr.org/innoextract/files/innoextract-1.9-linux.tar.xz
+          tar xvf innoextract-*-linux.tar.xz
+          cp innoextract-*-linux/bin/amd64/innoextract ./innoextract
+          chmod +x ./innoextract
+          wget http://update.cz88.net/soft/setup.zip
+          unzip setup.zip
+          ./innoextract ./setup.exe
+          cp app/qqwry.dat ../qqwry.dat
+          cd ../
+          rm -rf temp
+          
+          if [ ! -d "./old" ]; then
+            mkdir ./old
+          fi
+          date_dir="./old/`date "+%Y%m%d"`"
+          if [ ! -d ${date_dir} ]; then
+            mkdir ${date_dir}
+          fi
+          cp ./qqwry.dat ${date_dir}/qqwry.dat
+          
+      - name: Commit Changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then 
+              exit 0
+          else 
+              git add .
+              git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git config --local user.name "github-action[bot]"
+              git commit -m "Updated at $(date)" -a
+          fi
+          
+      - name: GitHub Push
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
