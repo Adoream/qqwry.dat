@@ -28,15 +28,6 @@ jobs:
           cd ../
           rm -rf temp
           
-          if [ ! -d "./old" ]; then
-            mkdir ./old
-          fi
-          date_dir="./old/`date "+%Y%m%d"`"
-          if [ ! -d ${date_dir} ]; then
-            mkdir ${date_dir}
-          fi
-          cp ./qqwry.dat ${date_dir}/qqwry.dat
-          
       - name: Commit Changes
         run: |
           if [ -z "$(git status --porcelain)" ]; then 
